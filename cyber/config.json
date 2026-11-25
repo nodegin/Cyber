@@ -1,0 +1,21 @@
+{
+    "wallpaper": {
+        "web": "",
+        "webFps": 24,
+        "webScale": 0.5,
+        "video": "~/.local/share/cyber/assets/wallpaper/rainy-city.mp4",
+        "image": "~/.local/share/cyber/assets/wallpaper/neon-district.png"
+    },
+    "apps": {
+        "terminal": "ghostty -e"
+    },
+    "effects": {
+        "menus": true,
+        "windows": true,
+        "workspace": true,
+        "intensity": 0.55
+    },
+    "lookingGlass": {
+        "vm": "win11"
+    }
+}

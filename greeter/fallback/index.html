@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>canvasgreet: fallback</title>
+<style>
+  :root { color-scheme: dark; font: 16px/1.4 "Adwaita Sans", "Open Sans", "Noto Sans CJK JP", sans-serif; }
+  html, body { margin: 0; height: 100%; background: #101014; color: #ececf1; }
+  body { display: grid; place-items: center; }
+  form { width: min(360px, 90vw); display: grid; gap: 12px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  p { margin: 0; color: #9a9aa6; font-size: 13px; }
+  label { display: grid; gap: 4px; font-size: 13px; color: #9a9aa6; }
+  input, select, button { font: inherit; color: inherit; background: #1c1c22; border: 1px solid #33333d; border-radius: 8px; padding: 10px 12px; }
+  input:focus, select:focus, button:focus { outline: 2px solid #7aa2ff; outline-offset: 1px; }
+  button[type=submit] { background: #2f4fbf; border-color: #2f4fbf; font-weight: 600; }
+  .row { display: flex; gap: 8px; } .row button { flex: 1; font-size: 13px; }
+  #msg { min-height: 1.4em; color: #ff9a9a; font-size: 14px; }
+</style>
+</head>
+<body>
+<form id="f" autocomplete="off">
+  <h1>Log in</h1>
+  <p>Fallback login screen. The theme failed to load, or Ctrl+Alt+Shift+F was pressed.</p>
+  <label>User <select id="user"></select></label>
+  <label>Environment <select id="session"></select></label>
+  <label>Password <input id="pw" type="password" autofocus></label>
+  <button type="submit">Log in</button>
+  <div id="msg" role="status"></div>
+  <div class="row">
+    <button type="button" data-a="suspend">Sleep</button>
+    <button type="button" data-a="reboot">Restart</button>
+    <button type="button" data-a="poweroff">Shut down</button>
+  </div>
+</form>
+<script>
+(async () => {
+  const g = await window.greeterReady;
+  const $ = (id) => document.getElementById(id);
+  const users = await g.users(), sessions = await g.sessions();
+  for (const u of users) $("user").add(new Option(u.realName + " (" + u.name + ")", u.name, false, u.name === g.info.preferredUser));
+  for (const s of sessions) $("session").add(new Option(s.name, s.id, false, s.id === g.info.preferredSession));
+  let prompt = null;
+  g.on("prompt", (p) => { prompt = p; $("msg").textContent = p.message; $("pw").value = ""; $("pw").focus(); });
+  g.on("message", (m) => { $("msg").textContent = m.message; });
+  $("f").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (prompt) { prompt = null; g.respond($("pw").value); $("pw").value = ""; return; }
+    $("msg").textContent = "…";
+    const r = await g.login($("user").value, $("pw").value, $("session").value);
+    $("msg").textContent = r.ok ? (g.info.demo ? "Demo: login OK" : "Starting…") : r.error;
+    if (!r.ok) { $("pw").value = ""; $("pw").focus(); }
+  });
+  document.querySelectorAll("[data-a]").forEach((b) => b.addEventListener("click", async () => {
+    const r = await g.power(b.dataset.a);
+    if (!r.ok) $("msg").textContent = r.error;
+    else if (r.demo) $("msg").textContent = "Demo: would " + b.dataset.a;
+  }));
+})();
+</script>
+</body>
+</html>

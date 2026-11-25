@@ -1,0 +1,13 @@
+#!/bin/sh
+# Started by greetd as the "greeter" user: runs canvasgreet full screen inside cage.
+#   -s  allow VT switching (Ctrl+Alt+F2 etc. still reach a text console)
+#   -d  no client-side window decorations
+if [ -z "$XDG_RUNTIME_DIR" ]; then
+  echo "canvasgreet: XDG_RUNTIME_DIR is not set, so the greeter has no logind session." >&2
+  echo "canvasgreet: greetd must run as a system service (greetd.service), not from inside a login session." >&2
+  exit 1
+fi
+# Cursor for the login screen (falls back to the default theme if Bibata isn't installed).
+export XCURSOR_THEME="${XCURSOR_THEME:-Bibata-Modern-Classic}"
+export XCURSOR_SIZE="${XCURSOR_SIZE:-24}"
+exec cage -s -d -- /usr/local/bin/canvasgreet "$@"

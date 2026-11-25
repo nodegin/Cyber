@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ICE // login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+
+  <div class="hud" id="hud">
+    <!-- top left: status -->
+    <header class="corner tl">
+      <div class="stripes" aria-hidden="true"></div>
+      <div class="line"><b id="sessionState">SESSION OFFLINE</b><span class="red">&nbsp;&nbsp;// <span id="iceState">ICE ACTIVE</span></span></div>
+      <div class="line jp cyan" id="jpState">システム待機 // 防壁稼働中</div>
+    </header>
+
+    <!-- top right: host -->
+    <header class="corner tr">
+      <div class="line">HOST <b id="host"></b>&nbsp;&nbsp;//&nbsp;&nbsp;UPLINK <b id="uplink"></b></div>
+      <div class="line dim">KERNEL&nbsp;&nbsp;//&nbsp;&nbsp;<span id="kernel"></span></div>
+    </header>
+
+    <!-- left HUD column (tilted) -->
+    <section class="side left" aria-label="System">
+      <div class="frame">
+        <div class="frame-head"><span>SYS // VITALS</span><span class="jp cyan">生体反応</span></div>
+        <div class="meter" id="cpuMeter">
+          <div class="meter-top"><span>CPU</span><b id="cpuVal">--%</b></div>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="meter" id="memMeter">
+          <div class="meter-top"><span>MEM</span><b id="memVal">-- / -- GB</b></div>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="kv"><span>LOAD</span><b id="load">-.-- -.-- -.--</b></div>
+        <div class="kv"><span>UPTIME</span><b id="uptime">--</b></div>
+        <div class="kv"><span>OS</span><b id="os"></b></div>
+      </div>
+      <div class="toast" id="toast">
+        <span class="toast-icon">▲</span>
+        <div><b id="toastTitle">UPLINK READY</b><small id="toastSub"></small></div>
+      </div>
+    </section>
+
+    <!-- right HUD column (tilted): environments -->
+    <section class="side right" aria-label="Environment">
+      <div class="frame">
+        <div class="frame-head"><span id="targetsHead">UPLINK // TARGETS</span><span class="jp cyan" id="targetsJp">環境選択</span></div>
+        <ol class="targets" id="targets" role="listbox" aria-label="Environment"></ol>
+        <div class="hint" id="targetsHint"><kbd>↑</kbd><kbd>↓</kbd> SELECT TARGET</div>
+      </div>
+      <div class="frame feed">
+        <div class="frame-head"><span>SIGNAL // FEED</span><span class="dim" id="feedClock"></span></div>
+        <div class="feed-row"><span>CPU</span><canvas id="sparkCpu"></canvas><b id="feedCpu">--</b></div>
+        <div class="feed-row"><span>NET ↓</span><canvas id="sparkRx"></canvas><b id="feedRx">--</b></div>
+        <div class="feed-row"><span>NET ↑</span><canvas id="sparkTx"></canvas><b id="feedTx">--</b></div>
+      </div>
+    </section>
+
+    <!-- center: clock + auth -->
+    <main class="center">
+      <!-- Kleemax has no ":" glyph, so the colon is drawn (.colon). The two .ghost copies are the glitch layers. -->
+      <div class="clock" id="clock">
+        <span class="hm-wrap">
+          <span class="hm"><span class="hh">--</span><span class="colon"><i></i><i></i></span><span class="mm">--</span></span>
+          <span class="hm ghost a" aria-hidden="true"><span class="hh">--</span><span class="colon"><i></i><i></i></span><span class="mm">--</span></span>
+          <span class="hm ghost b" aria-hidden="true"><span class="hh">--</span><span class="colon"><i></i><i></i></span><span class="mm">--</span></span>
+        </span>
+        <span class="sec" id="sec">--</span>
+      </div>
+      <div class="operator">OPERATOR <span class="dim">//</span> <button type="button" id="operator"></button></div>
+      <div class="date" id="date"></div>
+
+      <form class="auth" id="auth" autocomplete="off">
+        <svg class="auth-border" id="authBorder" aria-hidden="true"></svg>
+        <div class="auth-head">
+          <span>AUTH&nbsp;&nbsp;//&nbsp;&nbsp;PASSPHRASE <span class="jp cyan">認証</span></span>
+          <span><span class="caps red" id="caps" hidden>CAPS&nbsp;&nbsp;</span><span id="failed">FAILED 0</span></span>
+        </div>
+        <div class="cells" id="cells" aria-hidden="true"></div>
+        <div class="scanbar" aria-hidden="true"><i></i></div>
+        <div class="auth-status" id="status" role="status"></div>
+        <input id="pw" type="password" aria-label="Passphrase" spellcheck="false" autocomplete="off">
+      </form>
+    </main>
+
+    <!-- bottom bars -->
+    <footer class="corner bl">
+      <span>ENV <b id="envCount">0</b> LOADED</span>
+      <span class="hi" id="footUptime">UPTIME --</span>
+      <span id="iceFoot">ICE NOMINAL</span>
+    </footer>
+    <footer class="corner br">
+      <span id="pwr">PWR AC</span>
+      <button type="button" data-power="suspend">SLEEP</button>
+      <button type="button" data-power="reboot">REBOOT</button>
+      <button type="button" data-power="poweroff">SHUTDOWN</button>
+    </footer>
+  </div>
+
+  <div class="boot" id="boot" aria-hidden="true"><pre id="bootlog"></pre></div>
+  <div class="demo-badge">DEMO MODE // PASSPHRASE "demo"</div>
+
+  <script src="fx.js"></script>
+  <script src="sfx.js"></script>
+  <script src="cursor.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

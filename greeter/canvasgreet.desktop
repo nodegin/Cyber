@@ -1,0 +1,11 @@
+[Desktop Entry]
+# Identifies the "canvasgreet" app ID to the desktop portal (Qt registers it in --demo
+# previews; without this entry it logs "App info not found for 'canvasgreet'").
+# NoDisplay keeps it out of app launchers; set it to false for a "Login screen preview" launcher.
+Type=Application
+Name=Login screen preview
+Comment=Preview the canvasgreet login screen theme
+Exec=canvasgreet --demo --fullscreen
+Icon=preferences-desktop-theme
+Categories=Settings;
+NoDisplay=true

@@ -1,0 +1,3 @@
+#%PAM-1.0
+# canvaslock (canvasgreet's lock screen): the same password checks as logging in.
+auth       include      login

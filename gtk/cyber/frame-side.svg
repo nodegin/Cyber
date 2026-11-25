@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <!-- The sidebar's outline in Cyber's look for GNOME Files (gtk/cyber.css): the folder's tab.
+       Left edge, the 14 px cut at the top left, the top edge, the bottom edge; at the right the thin
+       cyan line between tab and file pane. Used as a border image cut into 32 px corners, so the
+       middle of every edge stretches. Render: rsvg-convert frame-side.svg -o frame-side.png -->
+  <g fill="none" stroke="#8099a8" stroke-opacity="0.72" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="butt">
+    <path d="M 0.75 96 L 0.75 14.31 L 14.31 0.75 L 96 0.75"/>
+    <path d="M 0 95.25 L 96 95.25"/>
+  </g>
+  <path d="M 95.5 1.5 L 95.5 94.5" fill="none" stroke="#3cf0ff" stroke-opacity="0.30" stroke-width="1"/>
+</svg>

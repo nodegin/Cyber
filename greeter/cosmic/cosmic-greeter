@@ -1,0 +1,11 @@
+#!/bin/sh
+# Installed as ~/.local/bin/cosmic-greeter by ~/.local/share/cyber/lock-mode.sh.
+# Inside your COSMIC session, cosmic-session starts "cosmic-greeter" by name as its lock
+# screen, and ~/.local/bin comes first in your PATH. With the cyberpunk lock switched on (and
+# an installed canvaslock that supports it), run canvaslock's listener instead; otherwise the
+# real COSMIC locker. COSMIC's login screen is not affected (it runs as another user).
+if [ -f "$HOME/.local/share/hypr-setup/use-canvaslock" ] &&
+   grep -q 'def run_daemon' /usr/local/lib/canvasgreet/canvaslock.py 2>/dev/null; then
+  exec /usr/local/bin/canvaslock --daemon
+fi
+exec /usr/bin/cosmic-greeter "$@"

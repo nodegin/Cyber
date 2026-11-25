@@ -1,0 +1,3 @@
+#!/bin/sh
+# canvasgreet's theme as your lock screen (see canvaslock.py). -I: isolated Python.
+exec /usr/bin/python3 -I /usr/local/lib/canvasgreet/canvaslock.py "$@"

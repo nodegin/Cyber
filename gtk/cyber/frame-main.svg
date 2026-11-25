@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <!-- The file pane's outline: the slope down from the tab (14 px), the lowered top edge, the right
+       edge, the 34 px cut at the bottom right, the bottom edge. No left edge: the tab's line is
+       there. Border image slices: 36 px top and left, 44 px right and bottom.
+       Render: rsvg-convert frame-main.svg -o frame-main.png -->
+  <path d="M 0 0.75 L 14 14.75 L 119.25 14.75 L 119.25 86 L 86 119.25 L 0 119.25"
+        fill="none" stroke="#8099a8" stroke-opacity="0.72" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="butt"/>
+</svg>

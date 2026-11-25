@@ -1,0 +1,93 @@
+# Cyber's terminal: Ghostty as a HUD panel with a CRT tube look (crt.glsl).
+# ~/.config/ghostty/config just includes this file (setup.sh). Cyber uses Ghostty, end-4/pC keeps
+# kitty (custom/variables.lua, "cyber terminal"). Reload after editing: ctrl+shift+, in Ghostty.
+
+# ---- the glow
+custom-shader = ~/.local/share/cyber/ghostty/crt.glsl
+# false: the shader only runs when the terminal redraws (1.4% of this PC's integrated GPU).
+# true (plus MOVING = 1.0 in crt.glsl): flicker and a rolling band, but the focused terminal then
+# redraws every frame, which was measured at 47% of the GPU.
+custom-shader-animation = false
+
+# ---- text
+# Share Tech Mono: thin, angular, sci-fi (sudo pacman -S ttf-sharetech-mono-nerd). It has one weight,
+# so bold is synthesised. Without the package, use the JetBrains lines below instead.
+font-family = ShureTechMono Nerd Font
+font-size = 15
+# The stars and asterisks (U+2720-274B: ✢ ✳ ✶ ✻ ✽, the working indicator of Claude Code and others)
+# from one font. The terminal's font has none of them and each one came from a different fallback
+# (Adwaita Mono, Noto Emoji, JetBrains Mono, a CJK font): different sizes and heights, so the
+# animation jumped about instead of growing and shrinking.
+font-codepoint-map = U+2720-U+274B=Adwaita Mono
+#font-family = JetBrainsMono Nerd Font
+#font-style = Light
+#font-style-bold = Medium
+#font-style-italic = Light Italic
+#font-style-bold-italic = Medium Italic
+#font-size = 14
+cursor-style = bar
+cursor-style-blink = true
+# room for the panel's edge and cut corners (crt.glsl)
+window-padding-x = 24
+# 32 at the top: the tab bar lies over that margin when a window has tabs (panel.css)
+window-padding-y = 32,18
+window-padding-balance = true
+
+# ---- the panel: the shader paints the background (crt.glsl, GLASS), so Ghostty's own is fully
+# see-through. `background` is still what programs are told the colour is. Focused, only that
+# background is see-through (GLASS in crt.glsl: 80%), text and edge stay solid; unfocused, the
+# whole window fades like any other window (Hyprland's inactive_opacity).
+background = #05141e
+foreground = #7fd6ff
+background-opacity = 0
+# ... and the GTK window behind it must be see-through too (end-4's GTK theme paints it dark)
+gtk-custom-css = ~/.local/share/cyber/ghostty/panel.css
+
+cursor-color = #3cf0ff
+cursor-text = #030810
+selection-background = #3cf0ff
+selection-foreground = #030810
+bold-color = bright
+
+# the same palette as kitty/cyber.conf
+palette = 0=#0b1622
+palette = 8=#3d6078
+palette = 1=#ff3d6e
+palette = 9=#ff7a9a
+palette = 2=#3dff9e
+palette = 10=#8affc4
+palette = 3=#f3e600
+palette = 11=#fff36b
+palette = 4=#2f9bff
+palette = 12=#7cc4ff
+palette = 5=#ff2bd6
+palette = 13=#ff84e8
+palette = 6=#3cf0ff
+palette = 14=#9df7ff
+palette = 7=#9bd3ee
+palette = 15=#c9f4ff
+
+# ---- the window: no title bar (Cyber draws its own corner brackets), no nagging
+window-decoration = none
+gtk-titlebar = false
+window-theme = dark
+resize-overlay = never
+# no progress line: programs (Claude Code while it works) can ask for a bar along the top of the
+# window, which showed as a red line moving across the panel's top edge
+progress-style = false
+confirm-close-surface = false
+app-notifications = no-clipboard-copy,no-config-reload
+# one Ghostty process for all windows: a new window opens at once
+gtk-single-instance = true
+
+# ---- keys, like the kitty setup
+# Ctrl+C copies when something is selected, otherwise it interrupts as usual
+keybind = performable:ctrl+c=copy_to_clipboard
+# Ctrl+F: find (Ghostty's own search bar). Ctrl+Shift+F does the same.
+keybind = ctrl+f=start_search
+# Tabs without Shift: Ctrl+T opens one, Ctrl+W closes the one you are on (Ghostty's own
+# Ctrl+Shift+T / Ctrl+Shift+W still work). The price: a shell and other programs no longer get
+# Ctrl+W (delete the word before the cursor; Alt+Backspace does the same) or Ctrl+T.
+gtk-toolbar-style = flat
+keybind = ctrl+t=new_tab
+keybind = ctrl+w=close_tab:this

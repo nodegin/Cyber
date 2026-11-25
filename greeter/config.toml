@@ -1,0 +1,62 @@
+# canvasgreet configuration: /etc/canvasgreet/config.toml
+# Read every time the login screen starts. Preview changes with: canvasgreet --demo
+
+# Theme = a folder in themes_dir. `canvasgreet --use NAME` (no sudo needed) overrides this.
+theme = "cyberpunk"
+# Lock screen (canvaslock) theme; empty = the same as the login screen.
+lock_theme = ""
+themes_dir = "/usr/local/share/canvasgreet/themes"
+
+# Login pictures: put <username>.png (or .jpg/.webp/.svg) here.
+avatars_dir = "/usr/local/share/canvasgreet/avatars"
+
+# Where the environments (sessions) come from, and which ones to hide.
+session_dirs = ["/usr/share/wayland-sessions"]
+# hyprland-uwsm: end-4's dots say not to start Hyprland via uwsm.
+# plasma: KDE parts end-4 installs as dependencies add this session; remove it here to use it.
+hide_sessions = ["hyprland-uwsm", "plasma"]
+
+# Preselected until someone logs in; after that the last-used one is remembered.
+default_session = "hyprland"
+
+# Start the session through your login shell so ~/.zprofile / ~/.profile apply.
+login_shell = true
+
+# Page zoom. 1.1 matches the 110% scale used in COSMIC.
+zoom = 1.1
+
+# Allow themes to load anything from the internet (web fonts, weather, CDNs...).
+# Off means no theme can ever send your password anywhere: keep it off unless you need it.
+allow_network = false
+
+# Milliseconds the theme gets to fade out after a successful login.
+exit_delay_ms = 700
+
+chromium_flags = "--ignore-gpu-blocklist --enable-gpu-rasterization"
+
+# Options passed to a theme as greeter.info.options (tables must stay at the end of the file).
+[theme_options.cyberpunk]
+# wallpaper = "wallpaper.png"   # any image in the theme folder
+focus = [0.5, 0.62]   # part of the wallpaper kept when cropping to the screen (x, y: 0..1)
+blur = 1.2            # wallpaper blur, image pixels
+dim = 0.28            # darkening behind the HUD, 0..1
+distortion = 1.0      # lens warp + colour fringing, 0 = off
+rain = true
+glitch = true         # random glitch bursts (a wrong password always glitches)
+tilt = 16             # degrees the side HUD panels are turned
+parallax = true       # HUD and background follow the mouse slightly
+sounds = true
+volume = 0.35
+# cursor = true       # neon triangle pointer (false = normal cursor). Unset: the login screen
+                      # draws the triangle, the lock screen uses your session's cursor set
+cursorSize = 1.25
+boot = true           # short boot log when the screen appears
+clock24 = true
+dateFormat = "mdy"    # "mdy" = 11.22.26, "ymd" = 26.11.22
+cells = 16
+# operator = "NETRUNNER"   # name after OPERATOR (default: your account name)
+
+[theme_options.music]
+autoplay = false      # start the music as soon as the login screen appears
+volume = 0.6
+clock24 = true

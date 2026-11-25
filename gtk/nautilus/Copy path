@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Copy path: puts the full path of what is selected in Files on the clipboard (several: one per
+# line); with nothing selected, the path of the folder that is shown.
+# Files runs it from its right-click menu, under Scripts (anything in
+# ~/.local/share/nautilus/scripts shows up there; setup.sh links this file into that folder).
+# With the package nautilus-python installed, "Copy Path" is directly in the menu instead
+# (cyber-copy-path.py, next to this file, which then removes the link to this script).
+paths=${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS%$'\n'}
+if [ -z "$paths" ]; then
+    # nothing selected (or not local files): the folder itself
+    paths=$(python3 -c '
+import sys, urllib.parse as u
+p = u.urlparse(sys.argv[1])
+print(u.unquote(p.path) if p.scheme == "file" else sys.argv[1], end="")' "${NAUTILUS_SCRIPT_CURRENT_URI:-}")
+fi
+[ -n "$paths" ] || exit 0
+printf '%s' "$paths" | wl-copy

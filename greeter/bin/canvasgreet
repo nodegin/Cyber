@@ -1,0 +1,3 @@
+#!/bin/sh
+# -I: isolated mode (ignores PYTHON* env vars, user site-packages and the current directory)
+exec /usr/bin/python3 -I /usr/local/lib/canvasgreet/canvasgreet.py "$@"

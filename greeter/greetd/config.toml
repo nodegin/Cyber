@@ -1,0 +1,12 @@
+# /etc/greetd/config.toml: written by canvasgreet's install.sh (the previous file is kept
+# as config.toml.before-canvasgreet). Used by greetd.service.
+[terminal]
+vt = 1
+
+[general]
+# Same PAM service cosmic-greeter uses, so login behaves exactly as before.
+service = "login"
+
+[default_session]
+command = "/usr/local/bin/canvasgreet-session"
+user = "greeter"

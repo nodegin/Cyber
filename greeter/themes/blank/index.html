@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+  canvasgreet "blank" theme: a starting point for your own login screen.
+
+  This is an ordinary web page. Edit it freely, add files next to it (CSS, JS, images,
+  fonts, audio, a whole Vite/Svelte/React build...). Everything in this folder is served
+  at greeter://theme/, so relative links like "style.css" or "img/bg.jpg" just work.
+
+  Preview while you edit (reloads on every save):
+      canvasgreet --demo --theme blank          (F12 = devtools, password = "demo")
+  Use it at the login screen:
+      canvasgreet --use blank
+
+  Rules of the road
+  - No network by default: the login screen can't load remote fonts, scripts or images
+    (so no theme can ever send a password anywhere). Put assets in this folder instead.
+    It can be allowed with allow_network = true in /etc/canvasgreet/config.toml.
+  - The greeter can't read your home folder; copy images/audio into this folder.
+  - Performance on an iGPU: live `backdrop-filter: blur()` is fine on small cards, but
+    avoid it (and CSS `filter`) on full-screen layers that change every frame. A canvas
+    drawn at low resolution and stretched by CSS gives a blurred look for free (below).
+    Put anything animated full-screen on its own layer with `will-change: transform`.
+
+  The API (see bridge.js for the full list):
+      const greeter = await window.greeterReady;
+      greeter.info                      { hostname, demo, preferredUser, preferredSession, options, ... }
+      await greeter.users()             [{ name, realName, avatar }]
+      await greeter.sessions()          [{ id, name, comment }]   <- "environments": COSMIC, Hyprland...
+      await greeter.login(user, password, sessionId)   -> { ok } or { ok: false, error }
+      await greeter.power("poweroff" | "reboot" | "suspend")
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blank canvas</title>
+<style>
+  :root {
+    --fg: #f4f4f8;
+    --muted: rgb(244 244 248 / 0.6);
+    --line: rgb(255 255 255 / 0.14);
+    --accent: #8fb0ff;
+    font-family: "Rubik", "Adwaita Sans", "Open Sans", "Noto Sans CJK JP", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0b10; color: var(--fg); }
+
+  /* The canvas: paint whatever you like in draw() below.
+     will-change keeps it on its own GPU layer, so redrawing it never forces the rest
+     of the page to be repainted. */
+  #paint { position: fixed; inset: 0; width: 100%; height: 100%; will-change: transform; }
+
+  .card {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: min(380px, 90vw); padding: 28px; border-radius: 28px;
+    background: rgb(16 16 24 / 0.4); border: 1px solid var(--line);
+    backdrop-filter: blur(24px) saturate(140%);          /* the "glass" look */
+    display: grid; gap: 14px; text-align: center;
+  }
+  .avatar { width: 84px; height: 84px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center;
+    font-size: 34px; font-weight: 600; background: linear-gradient(135deg, #6d8dff, #c06dff) center / cover; }
+  .name { font-size: 20px; font-weight: 600; }
+  input { height: 48px; border-radius: 24px; padding: 0 18px; font: inherit; color: inherit; outline: none;
+    background: rgb(255 255 255 / 0.08); border: 1px solid var(--line); }
+  input:focus { border-color: var(--accent); }
+
+  /* "Choose environment": one button per session (COSMIC, Hyprland, ...) */
+  .envs { display: flex; gap: 6px; padding: 4px; border-radius: 16px; background: rgb(255 255 255 / 0.06); }
+  .envs button { flex: 1; height: 36px; border: 0; border-radius: 12px; background: transparent; color: var(--muted);
+    font: inherit; font-size: 14px; cursor: pointer; }
+  .envs button[aria-pressed="true"] { background: rgb(255 255 255 / 0.16); color: var(--fg); }
+
+  #msg { min-height: 1.3em; font-size: 13px; color: var(--muted); }
+  #msg.error { color: #ff9e9e; }
+  .power { position: fixed; right: 24px; bottom: 20px; display: flex; gap: 8px; }
+  .power button { border: 1px solid var(--line); background: rgb(0 0 0 / 0.25); color: var(--muted); border-radius: 12px;
+    padding: 8px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+</style>
+</head>
+<body>
+  <canvas id="paint"></canvas>
+
+  <form class="card" id="form" autocomplete="off">
+    <div class="avatar" id="avatar"></div>
+    <div class="name" id="name"></div>
+    <input id="password" type="password" placeholder="Password" aria-label="Password">
+    <div class="envs" id="envs" role="group" aria-label="Environment"></div>
+    <div id="msg" role="status"></div>
+  </form>
+
+  <div class="power">
+    <button data-power="suspend">Sleep</button>
+    <button data-power="reboot">Restart</button>
+    <button data-power="poweroff">Shut down</button>
+  </div>
+
+<script>
+// ---------------------------------------------------------------------------
+// 1. The canvas. Drawn at 1/8 resolution and stretched: soft, cheap, iGPU-friendly.
+//    Replace draw() with anything: particles, shaders (WebGL works), images...
+// ---------------------------------------------------------------------------
+const canvas = document.getElementById("paint");
+const ctx = canvas.getContext("2d");
+const SCALE = 1 / 8;
+function resize() {
+  canvas.width = Math.ceil(innerWidth * SCALE);
+  canvas.height = Math.ceil(innerHeight * SCALE);
+}
+addEventListener("resize", resize);
+resize();
+
+function draw(t) {
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = "#0a0b10";
+  ctx.fillRect(0, 0, w, h);
+  // two slow colour blobs; delete these and paint your own
+  for (const [hue, phase] of [[230, 0], [290, 2.1]]) {
+    const x = w * (0.5 + 0.3 * Math.cos(t / 9000 + phase));
+    const y = h * (0.5 + 0.25 * Math.sin(t / 11000 + phase));
+    const g = ctx.createRadialGradient(x, y, 0, x, y, Math.max(w, h) * 0.5);
+    g.addColorStop(0, `hsl(${hue} 70% 40% / 0.6)`);
+    g.addColorStop(1, "transparent");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+  }
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+// ---------------------------------------------------------------------------
+// 2. The login form.
+// ---------------------------------------------------------------------------
+(async () => {
+  const greeter = await window.greeterReady;
+  const $ = (id) => document.getElementById(id);
+
+  const users = await greeter.users();
+  const user = users.find((u) => u.name === greeter.info.preferredUser) || users[0];
+  $("name").textContent = user ? user.realName : "No users";
+  if (user && user.avatar) $("avatar").style.backgroundImage = `url("${user.avatar}")`;
+  else if (user) $("avatar").textContent = user.realName.charAt(0).toUpperCase();
+
+  // Environments: COSMIC, Hyprland, ... (from /usr/share/wayland-sessions)
+  const sessions = await greeter.sessions();
+  let session = greeter.info.preferredSession;
+  for (const s of sessions) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = s.name;
+    b.title = s.comment;
+    b.setAttribute("aria-pressed", String(s.id === session));
+    b.addEventListener("click", () => {
+      session = s.id;
+      for (const other of $("envs").children) other.setAttribute("aria-pressed", String(other === b));
+      $("password").focus();
+    });
+    $("envs").append(b);
+  }
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("msg").className = "";
+    $("msg").textContent = "…";
+    const result = await greeter.login(user.name, $("password").value, session);
+    $("password").value = "";
+    if (result.ok) {
+      $("msg").textContent = greeter.info.demo ? "Demo: password accepted" : "Starting…";
+    } else {
+      $("msg").className = "error";
+      $("msg").textContent = result.error;
+    }
+  });
+
+  // Real actions outside --demo. { ok: false, error } if systemd/polkit refuses.
+  for (const b of document.querySelectorAll("[data-power]")) {
+    b.addEventListener("click", async () => {
+      const r = await greeter.power(b.dataset.power);
+      if (r.demo) $("msg").textContent = `Demo: would ${b.dataset.power} now`;
+      else if (!r.ok) { $("msg").className = "error"; $("msg").textContent = r.error; }
+    });
+  }
+  $("password").focus();
+})();
+</script>
+</body>
+</html>

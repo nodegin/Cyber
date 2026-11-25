@@ -1,0 +1,10 @@
+# built on this machine
+cyber/hypr/corners/cybercorners.so
+cyber/hypr/corners/cybercorners.so.new
+cyber/hypr/corners/cybercorners.stamp
+__pycache__/
+*.pyc
+*.tmp
+# left by an interrupted edit
+*.new~
+*~
